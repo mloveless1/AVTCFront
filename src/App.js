@@ -12,7 +12,6 @@ function App() {
         <p>
           Welcome to the Youth Track Club Sign Up
         </p>
-        {/* Include the SignupForm component */}
         <SignupForm />
       </header>
     </div>
