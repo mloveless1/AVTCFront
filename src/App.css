@@ -1,5 +1,7 @@
 .App {
   text-align: center;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #4d4d4d 50%, #333333 100%);
+
 }
 
 .App-logo {
@@ -14,7 +16,6 @@
 }
 
 .App-header {
-  background-color: #282c34;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -22,6 +23,7 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
 }
 
 .App-link {
