@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import useApi from '../hooks/useApi';
 import { toast } from 'react-toastify';
-import { formStyle, inputStyle, labelStyle, buttonStyle, disabledButtonStyle, athleteContainerStyle } from '../styles/signup';
+import SignatureCanvas from 'react-signature-canvas';
+import SignaturePadComponent from './SignaturePadComponent';
+import { formStyle, inputStyle, invalidInputStyle, labelStyle, buttonStyle, disabledButtonStyle, athleteContainerStyle } from '../styles/signup';
+
+const isEmpty = (val: any) => val == null || !(Object.keys(val) || val).length;
+
+
 interface AthleteSignupForm {
   athleteFullName: string;
   dateOfBirth: string;
@@ -44,6 +50,7 @@ const SignupForm: React.FC = () => {
       },
     ],
   });
+  const signaturePadRef = useRef<SignatureCanvas>(null);
 
   const handleAthleteChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const updatedAthletes = parentFormData.athletes.map((athlete, i) =>
@@ -79,47 +86,97 @@ const SignupForm: React.FC = () => {
       const updatedAthletes = parentFormData.athletes.filter((_, i) => i !== index);
       setParentFormData({ ...parentFormData, athletes: updatedAthletes });
     };
-  
+    const [invalidFields, setInvalidFields] = useState({
+      parentName: false,
+      email: false,
+      phoneNumber: false,
+      streetAddress: false,
+      city: false,
+      zipcode: false,
+      carrier: false,
+      emergencyName: false,
+      emergencyPhone: false,
+    }); 
     const { post, data, error, loading } = useApi<any>('/signup');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('Parent Form Data:', parentFormData);
+    // console.log('Parent Form Data:', parentFormData);
     e.preventDefault();
-    setIsSubmitting(true); // Disable the button and start submission process
+    setIsSubmitting(true); 
+
+    const signatureImage = signaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
 
     // Prepare the data to be sent
     const requestData = {
       ...parentFormData,
       athletes: parentFormData.athletes,
+      signature: signatureImage,
     };
 
-    // Use the post method from useApi to send the data
-    try {
-      const response = await post(requestData);
-      // Handle the successful submission here
-      console.log(response);
+    if (!isFormValid){
+
+      // Update invalid fields state
+      setInvalidFields({
+        parentName: isEmpty(parentFormData.parentName),
+        email: !isEmailValid,
+        phoneNumber: !isPhoneValid,
+        streetAddress: isEmpty(parentFormData.streetAddress),
+        city: isEmpty(parentFormData.city ),
+        zipcode: isEmpty(parentFormData.zipcode),
+        carrier: isEmpty(parentFormData.carrier),
+        emergencyName: isEmpty(parentFormData.emergencyName),
+        emergencyPhone: isEmpty(parentFormData.emergencyPhone),
       
-    // Handle the successful submission here
-    toast.success('Sign up successful! Refreshing page...', {
-      position: "top-center",
-      autoClose: 5000,  // Toast will disappear after 5 seconds
-      onClose: () => {
-        // Refresh the page 1 second after the toast disappears
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
-      },
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
+      // Set other fields accordingly
     });
-    } catch (err) {
+          // Scroll to top of the page
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      toast.error('Sign up failed, please check fields. Fill required fields.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    else{
+      // Use the post method from useApi to send the data
+      try {
+        const response = await post(requestData);
+        // Handle the successful submission here
+        console.log(requestData);
+      
+      // Handle the successful submission here
+      toast.success('Sign up successful! Refreshing page...', {
+        position: "top-center",
+        autoClose: 5000,  // Toast will disappear after 5 seconds
+        /*onClose: () => {
+          // Refresh the page 1 second after the toast disappears
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        }, */
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        });
+      }
+    catch (err) {
       // Handle errors here
       console.error('Error:', err);
     }
+  }
     
 
   };
@@ -134,23 +191,27 @@ const SignupForm: React.FC = () => {
     window.open(contractPath, 'Contract', 'height=600,width=800');
   };
 
+  const handleSignatureClear = () => {
+    console.log('Signature cleared!');
+    // Handle the clear signature logic here
+  };
   const [isFormValid, setIsFormValid] = useState(false);
 
   // Regular expressions for validation
  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+ // Validate email and phone number formats
+ const isEmailValid = emailRegex.test(parentFormData.email);
+ const isPhoneValid = phoneRegex.test(parentFormData.phoneNumber);
+ const isEmergencyPhoneValid = phoneRegex.test(parentFormData.emergencyPhone);
 
   // Validation function
   const validateForm = () => {
-    // Validate email and phone number formats
-    const isEmailValid = emailRegex.test(parentFormData.email);
-    const isPhoneValid = phoneRegex.test(parentFormData.phoneNumber);
-
     // Check other parent data
     const isParentDataValid = parentFormData.parentName && parentFormData.email && 
                               parentFormData.phoneNumber && parentFormData.streetAddress && 
                               parentFormData.city && parentFormData.zipcode && 
-                              parentFormData.carrier && parentFormData.policyNumber && 
+                              parentFormData.carrier && 
                               parentFormData.emergencyName && parentFormData.emergencyPhone;
 
     // Check each athlete data
@@ -158,7 +219,7 @@ const SignupForm: React.FC = () => {
       athlete.athleteFullName && athlete.dateOfBirth && athlete.gender && athlete.returner_status
     );
 
-    setIsFormValid(!!(isEmailValid && isPhoneValid && isParentDataValid && areAthletesValid && isAgreed));
+    setIsFormValid(!!( isEmergencyPhoneValid && isEmailValid && isPhoneValid && isParentDataValid && areAthletesValid && isAgreed));
   };
 
   useEffect(() => {
@@ -176,85 +237,92 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
     <form onSubmit={handleSubmit} style={formStyle}>
       <div style={labelStyle}>
         <label>
-          Parent's Name:
+          Parent's Name *:
           <input
             type="text"
             name="parentName"
+            placeholder='Enter your first and last name'
             value={parentFormData.parentName}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.parentName ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
       <div style={labelStyle}>
         <label>
-          Parent's Email:
+          Parent's Email *:
           <input
             type="text"
             name="email"
+            placeholder='Enter your email'
             value={parentFormData.email}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.email ? invalidInputStyle : inputStyle }
           />
         </label>
       </div> 
       <div style={labelStyle}>
         <label>
-          Parent's Phone Number:
+          Parent's Phone Number *:
           <input
             type="text"
             name="phoneNumber"
+            placeholder='###-###-####'
             value={parentFormData.phoneNumber}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.phoneNumber ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
       <div style={labelStyle}>
         <label>
-          Street Address:
+          Street Address *:
           <input
             type="text"
             name="streetAddress"
+            placeholder='Enter your address'
             value={parentFormData.streetAddress}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.streetAddress ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
       <div style={labelStyle}>
         <label>
-          City:
+          City *:
           <input
             type="text"
             name="city"
+            placeholder='Enter your city'
             value={parentFormData.city}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.city ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
       <div style={labelStyle}>
         <label>
-          Zip code:
+          Zip code *:
           <input
             type="text"
             name="zipcode"
+            placeholder='Enter your zip code'
             value={parentFormData.zipcode}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.zipcode ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
       <div style={labelStyle}>
         <label>
-          Insurance Carrier:
+          Insurance Carrier *:
           <input
             type="text"
             name="carrier"
+            placeholder='Enter your insurance carrier'
             value={parentFormData.carrier}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.carrier ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
@@ -264,33 +332,36 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           <input
             type="text"
             name="policyNumber"
+            placeholder='Enter your policy number'
             value={parentFormData.policyNumber}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ inputStyle }
           />
         </label>
       </div>
       <div style={labelStyle}>
         <label>
-          Emergency Contact:
+          Emergency Contact *:
           <input
             type="text"
             name="emergencyName"
+            placeholder='Enter emergency contact'
             value={parentFormData.emergencyName}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.emergencyName ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>   
       <div style={labelStyle}>
         <label>
-          Emergency Contact Phone Number:
+          Emergency Contact Phone Number *:
           <input
             type="text"
             name="emergencyPhone"
+            placeholder='Enter emergency contact phone number'
             value={parentFormData.emergencyPhone}
             onChange={handleParentChange}
-            style={inputStyle}
+            style={ invalidFields.emergencyPhone ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>   
@@ -300,10 +371,11 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           {/* Athlete's Full Name */}
           <div style={labelStyle}>
             <label>
-              Athlete's Full Name:
+              Athlete's Full Name *:
               <input
                 type="text"
                 name="athleteFullName"
+                placeholder='Enter your childs name'
                 value={athlete.athleteFullName}
                 onChange={(e) => handleAthleteChange(index, e)}
                 style={inputStyle}
@@ -313,7 +385,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           {/* Date of Birth */}
           <div style={labelStyle}>
             <label>
-              Date of Birth:
+              Date of Birth *:
               <input
                 type="date"
                 name="dateOfBirth"
@@ -326,7 +398,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           {/* Gender */}
           <div style={labelStyle}>
             <label>
-              Gender:
+              Gender *:
               <select
                 name="gender"
                 value={athlete.gender}
@@ -341,7 +413,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           {/* Returner Status */}
           <div style={labelStyle}>
             <label>
-              Returner Status:
+              Returner Status *:
               <select
                 name="returner_status"
                 value={athlete.returner_status}
@@ -375,7 +447,8 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           I agree to the <a href="#!" onClick={handleContractClick}>contract</a>
         </label>
       </div>
-      <button type="submit" style={currentButtonStyle} disabled={!isFormValid || isSubmitting}>
+      <SignaturePadComponent ref={signaturePadRef} onClear={handleSignatureClear} />
+      <button type="submit" style={currentButtonStyle} disabled={ isSubmitting }>
         {isAgreed ? 'Sign Up' : '⚠️ Agree to Contract'}
       </button>
     </form>
