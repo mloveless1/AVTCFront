@@ -22,7 +22,7 @@ const SignaturePadComponent = forwardRef<SignatureCanvas, SignaturePadComponentP
   return (
     <div>
       <p>
-        Signature:<br/> 
+        Parent Signature *:<br/> 
         <button type='button' onClick={handleClearClick}>Clear</button>
       </p>
       <div style={signaturePadContainer}>

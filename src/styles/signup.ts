@@ -6,11 +6,11 @@
     justifyContent: 'center',
     margin: '0 auto',
     padding: '20px',
-    maxWidth: 'calc(100% - 30px)',
+    width: '600px', // Set a specific width for the form
     backgroundColor: '#000',
     color: '#FFD700',
     borderRadius: '8px',
-    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', // Optional: Adds depth with shadow
+    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
   };
 
   export const inputStyle: React.CSSProperties = {
@@ -68,5 +68,23 @@ export const signatureCanvas: React.CSSProperties = {
     height: '100px',
     border: '1px solid #000'
   };
-
-export default { formStyle, inputStyle, invalidInputStyle, labelStyle, buttonStyle, disabledButtonStyle, athleteContainerStyle, signaturePadContainer, signatureCanvas }
+export const collapsibleStyle: React.CSSProperties = {
+  color: 'gold', // Gold text color
+  cursor: 'pointer', // Changes the mouse cursor on hovering over the trigger
+  display: 'flex',
+  justifyContent: 'space-between', // Positions the text and icon on opposite ends
+  alignItems: 'center', // Centers items along the cross axis
+  padding: '10px',
+  backgroundColor: 'black', // Match the background color to your UI
+  border: '2px solid gold', // Gold border as seen in your screenshot
+  marginBottom: '5px', // Adds space between collapsibles
+  width: '100%', // Full width of the parent (formStyle's width)
+  boxSizing: 'border-box', // Include padding and border in the width calculation
+};
+// Adjust the collapsibleStyle to ensure it fills out the parent container's width.
+export const adjustedCollapsibleStyle: React.CSSProperties = {
+  ...collapsibleStyle,
+  width: '600px', // Make sure it fills the form's width
+  boxSizing: 'border-box', // Ensures padding and borders are included in the width
+};
+export default { formStyle, inputStyle, invalidInputStyle, labelStyle, buttonStyle, disabledButtonStyle, athleteContainerStyle, signaturePadContainer, signatureCanvas, collapsibleStyle, adjustedCollapsibleStyle }

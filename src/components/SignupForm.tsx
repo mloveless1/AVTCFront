@@ -3,7 +3,11 @@ import useApi from '../hooks/useApi';
 import { toast } from 'react-toastify';
 import SignatureCanvas from 'react-signature-canvas';
 import SignaturePadComponent from './SignaturePadComponent';
-import { formStyle, inputStyle, invalidInputStyle, labelStyle, buttonStyle, disabledButtonStyle, athleteContainerStyle } from '../styles/signup';
+import Collapsible from 'react-collapsible';
+import { BsChevronUp, BsChevronDown } from 'react-icons/bs';
+import { formStyle, inputStyle, invalidInputStyle, athleteContainerStyle } from '../styles/signup';
+import { adjustedCollapsibleStyle, labelStyle, buttonStyle, disabledButtonStyle } from '../styles/signup';
+import { blackGoldToastStyle } from '../styles/toast';
 
 const isEmpty = (val: any) => val == null || !(Object.keys(val) || val).length;
 
@@ -103,7 +107,7 @@ const SignupForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // console.log('Parent Form Data:', parentFormData);
     e.preventDefault();
-    setIsSubmitting(true); 
+    // setIsSubmitting(true); 
 
     const signatureImage = signaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
 
@@ -129,7 +133,7 @@ const SignupForm: React.FC = () => {
         emergencyPhone: isEmpty(parentFormData.emergencyPhone),
       
       // Set other fields accordingly
-    });
+      });
           // Scroll to top of the page
       window.scrollTo({
         top: 0,
@@ -144,11 +148,11 @@ const SignupForm: React.FC = () => {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
+        style: blackGoldToastStyle,
       });
       setIsSubmitting(false);
       return;
-    }
-    else{
+    } else{
       // Use the post method from useApi to send the data
       try {
         const response = await post(requestData);
@@ -170,16 +174,16 @@ const SignupForm: React.FC = () => {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
+        style: blackGoldToastStyle,
         });
       }
     catch (err) {
       // Handle errors here
       console.error('Error:', err);
+      }
     }
-  }
-    
-
   };
+
   const [isAgreed, setIsAgreed] = useState(false);
 
   const handleAgreementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,6 +239,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
+      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 1: Parent Information <BsChevronDown /></div>}>
       <div style={labelStyle}>
         <label>
           Parent's Name *:
@@ -364,8 +369,10 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
             style={ invalidFields.emergencyPhone ? invalidInputStyle : inputStyle }
           />
         </label>
-      </div>   
+      </div>  
+      </Collapsible> 
       {/* Repeat similar divs for other parent fields like email and phone number */}
+      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 2: Athlete Information <BsChevronDown /></div>}>
       {parentFormData.athletes.map((athlete, index) => (
         <div key={index} style={athleteContainerStyle} className='athlete-container'>
           {/* Athlete's Full Name */}
@@ -436,6 +443,8 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       <button type="button" onClick={handleAddAthlete} style={buttonStyle}>
         Add Another Athlete
       </button>
+      </Collapsible>
+      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 3: Agreement <BsChevronDown /></div>}>
       <div style={labelStyle}>
         <label>
           <input
@@ -448,9 +457,10 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
         </label>
       </div>
       <SignaturePadComponent ref={signaturePadRef} onClear={handleSignatureClear} />
-      <button type="submit" style={currentButtonStyle} disabled={ isSubmitting }>
+      <button type="submit" style={currentButtonStyle} disabled={ !isAgreed || isSubmitting }>
         {isAgreed ? 'Sign Up' : '⚠️ Agree to Contract'}
       </button>
+      </Collapsible>
     </form>
   );
 };
