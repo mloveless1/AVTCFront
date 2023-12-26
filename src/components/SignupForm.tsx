@@ -3,6 +3,7 @@ import useApi from '../hooks/useApi';
 import { toast } from 'react-toastify';
 import SignatureCanvas from 'react-signature-canvas';
 import SignaturePadComponent from './SignaturePadComponent';
+import { BarLoader } from 'react-spinners';
 import Collapsible from 'react-collapsible';
 import { BsChevronUp, BsChevronDown } from 'react-icons/bs';
 import { formStyle, inputStyle, invalidInputStyle, athleteContainerStyle } from '../styles/signup';
@@ -101,7 +102,7 @@ const SignupForm: React.FC = () => {
       emergencyName: false,
       emergencyPhone: false,
     }); 
-    const { post, data, error, loading } = useApi<any>('/signup');
+    const { post, data, error, loading} = useApi<any>('/signup');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -150,6 +151,7 @@ const SignupForm: React.FC = () => {
         progress: undefined,
         style: blackGoldToastStyle,
       });
+
       setIsSubmitting(false);
       return;
     } else{
@@ -166,6 +168,7 @@ const SignupForm: React.FC = () => {
         /*onClose: () => {
           // Refresh the page 1 second after the toast disappears
           setTimeout(() => {
+            setIsSubmiting(false);
             window.location.reload();
           }, 5000);
         }, */
@@ -459,7 +462,11 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       <SignaturePadComponent ref={signaturePadRef} onClear={handleSignatureClear} />
       <button type="submit" style={currentButtonStyle} disabled={ !isAgreed || isSubmitting }>
         {isAgreed ? 'Sign Up' : '⚠️ Agree to Contract'}
+        { isSubmitting ? <BarLoader
+                       color='green'
+                       loading={isSubmitting} /> : ''}
       </button>
+
       </Collapsible>
     </form>
   );
