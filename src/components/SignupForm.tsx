@@ -57,7 +57,9 @@ const SignupForm: React.FC = () => {
       },
     ],
   });
-  const signaturePadRef = useRef<SignatureCanvas>(null);
+  // Refs for signature pads
+  const parentSignaturePadRef = useRef<SignatureCanvas>(null);
+  const athleteSignaturePadRef = useRef<SignatureCanvas>(null);
 
   const handleAthleteChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const updatedAthletes = parentFormData.athletes.map((athlete, i) =>
@@ -113,13 +115,22 @@ const SignupForm: React.FC = () => {
     e.preventDefault();
     // setIsSubmitting(true); 
 
-    const signatureImage = signaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
+    // Signature images
+    const parentSignatureImage = parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
+    const athleteSignatureImages = parentFormData.athletes.map((athlete) => {
+      const athleteSignatureImage = athleteSignaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
+      return athleteSignatureImage;
+    });
+
 
     // Prepare the data to be sent
     const requestData = {
       ...parentFormData,
-      athletes: parentFormData.athletes,
-      signature: signatureImage,
+      athletes: parentFormData.athletes.map((athlete, index) => ({
+        ...athlete,
+        signature: athleteSignatureImages[index],
+      })),
+      signature: parentSignatureImage,
     };
 
     if (!isFormValid){
@@ -457,6 +468,12 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
             Remove
           </button>
           </div>
+          <div style={labelStyle}>
+            <label>
+              Athlete Signature *:
+              <SignaturePadComponent ref={athleteSignaturePadRef} onClear={handleSignatureClear}/>
+            </label>
+          </div>
         </div>
       ))}
       <button type="button" onClick={handleAddAthlete} style={buttonStyle}>
@@ -475,12 +492,12 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           I agree to the <a href="#!" onClick={handleContractClick}>contract</a>
         </label>
       </div>
-      <SignaturePadComponent ref={signaturePadRef} onClear={handleSignatureClear} />
+      <p>
+        Parent Signature *:
+      </p>
+      <SignaturePadComponent ref={parentSignaturePadRef} onClear={handleSignatureClear} />
       <button type="submit" style={currentButtonStyle} disabled={ !isAgreed || isSubmitting }>
         {isAgreed ? 'Sign Up' : '⚠️ Agree to Contract'}
-        { isSubmitting ? <BarLoader
-                       color='green'
-                       loading={isSubmitting} /> : ''}
       </button>
 
       </Collapsible>
