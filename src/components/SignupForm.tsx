@@ -18,6 +18,7 @@ interface AthleteSignupForm {
   dateOfBirth: string;
   gender: 'male' | 'female';
   returner_status: 'new' | 'returner';
+  lastPhysical: string;
 }
 
 interface ParentForm {
@@ -52,6 +53,7 @@ const SignupForm: React.FC = () => {
         dateOfBirth: '',
         gender: 'male',
         returner_status: 'new',
+        lastPhysical: '',
       },
     ],
   });
@@ -81,6 +83,7 @@ const SignupForm: React.FC = () => {
           dateOfBirth: '',
           gender: 'male',
           returner_status: 'new',
+          lastPhysical: '',
         },
       ],
     });
@@ -405,6 +408,19 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
               />
             </label>
           </div>
+          {/* Last Physical */}
+          <div style={labelStyle}>
+            <label>
+              Last Physical *:
+              <input
+                type="date"
+                name="lastPhysical"
+                value={athlete.lastPhysical}
+                onChange={(e) => handleAthleteChange(index, e)}
+                style={inputStyle}
+              />
+            </label>
+          </div>          
           {/* Gender */}
           <div style={labelStyle}>
             <label>
