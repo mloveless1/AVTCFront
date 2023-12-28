@@ -21,9 +21,6 @@ const SignaturePadComponent = forwardRef<SignatureCanvas, SignaturePadComponentP
 
   return (
     <div>
-      <p>
-        <button type='button' onClick={handleClearClick}>Clear</button>
-      </p>
       <div style={signaturePadContainer}>
         <SignatureCanvas
           penColor='gold'
@@ -32,6 +29,9 @@ const SignaturePadComponent = forwardRef<SignatureCanvas, SignaturePadComponentP
           // ... other props
         />
       </div>
+      <p>
+        <button type='button' onClick={handleClearClick}>Clear</button>
+      </p>
     </div>
   );
 });

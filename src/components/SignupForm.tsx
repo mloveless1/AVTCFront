@@ -10,6 +10,8 @@ import { formStyle, inputStyle, invalidInputStyle, athleteContainerStyle } from 
 import { adjustedCollapsibleStyle, labelStyle, buttonStyle, disabledButtonStyle } from '../styles/signup';
 import { blackGoldToastStyle } from '../styles/toast';
 
+
+
 const isEmpty = (val: any) => val == null || !(Object.keys(val) || val).length;
 
 
@@ -59,7 +61,8 @@ const SignupForm: React.FC = () => {
   });
   // Refs for signature pads
   const parentSignaturePadRef = useRef<SignatureCanvas>(null);
-  const athleteSignaturePadRef = useRef<SignatureCanvas>(null);
+  const athleteSignaturePadRefs = useRef<Array<React.RefObject<SignatureCanvas>>>([]);
+
 
   const handleAthleteChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const updatedAthletes = parentFormData.athletes.map((athlete, i) =>
@@ -76,19 +79,21 @@ const SignupForm: React.FC = () => {
   };
 
   const handleAddAthlete = () => {
-    setParentFormData({
-      ...parentFormData,
-      athletes: [
-        ...parentFormData.athletes,
-        {
-          athleteFullName: '',
-          dateOfBirth: '',
-          gender: 'male',
-          returner_status: 'new',
-          lastPhysical: '',
-        },
-      ],
-    });
+    const newAthlete: AthleteSignupForm = {  // Explicit type assertion here
+      athleteFullName: '',
+      dateOfBirth: '',
+      gender: 'male',
+      returner_status: 'new',
+      lastPhysical: '',
+    };
+  
+    setParentFormData((prevState) => ({
+      ...prevState,
+      athletes: [...prevState.athletes, newAthlete],
+    }));
+  
+    // Add a new ref for the newly added athlete
+    athleteSignaturePadRefs.current.push(React.createRef<SignatureCanvas>());
   };
 
     // Function to remove an athlete's input fields
@@ -117,8 +122,8 @@ const SignupForm: React.FC = () => {
 
     // Signature images
     const parentSignatureImage = parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
-    const athleteSignatureImages = parentFormData.athletes.map((athlete) => {
-      const athleteSignatureImage = athleteSignaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
+    const athleteSignatureImages = parentFormData.athletes.map((athlete, index) => {
+      const athleteSignatureImage = athleteSignaturePadRefs.current[index]?.current?.getTrimmedCanvas().toDataURL('image/png');
       return athleteSignatureImage;
     });
 
@@ -289,7 +294,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           <input
             type="text"
             name="phoneNumber"
-            placeholder='###-###-####'
+            placeholder='Must be in the format: ###-###-####'
             value={parentFormData.phoneNumber}
             onChange={handleParentChange}
             style={ invalidFields.phoneNumber ? invalidInputStyle : inputStyle }
@@ -380,7 +385,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           <input
             type="text"
             name="emergencyPhone"
-            placeholder='Enter emergency contact phone number'
+            placeholder='Must be in the format: ###-###-####'
             value={parentFormData.emergencyPhone}
             onChange={handleParentChange}
             style={ invalidFields.emergencyPhone ? invalidInputStyle : inputStyle }
@@ -471,7 +476,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           <div style={labelStyle}>
             <label>
               Athlete Signature *:
-              <SignaturePadComponent ref={athleteSignaturePadRef} onClear={handleSignatureClear}/>
+              <SignaturePadComponent ref={athleteSignaturePadRefs.current[index]} onClear={handleSignatureClear}/>
             </label>
           </div>
         </div>
