@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import useApi from '../hooks/useApi';
 import { toast } from 'react-toastify';
 import SignatureCanvas from 'react-signature-canvas';
 import SignaturePadComponent from './SignaturePadComponent';
-import { BarLoader } from 'react-spinners';
 import Collapsible from 'react-collapsible';
-import { BsChevronUp, BsChevronDown } from 'react-icons/bs';
+import { BsChevronDown } from 'react-icons/bs';
+import { FaSpinner } from 'react-icons/fa';
 import { formStyle, inputStyle, invalidInputStyle, athleteContainerStyle } from '../styles/signup';
 import { adjustedCollapsibleStyle, labelStyle, buttonStyle, disabledButtonStyle } from '../styles/signup';
 import { blackGoldToastStyle } from '../styles/toast';
@@ -21,6 +21,7 @@ interface AthleteSignupForm {
   gender: 'male' | 'female';
   returner_status: 'new' | 'returner';
   lastPhysical: string;
+  medicalConditions: string;
 }
 
 interface ParentForm {
@@ -56,13 +57,13 @@ const SignupForm: React.FC = () => {
         gender: 'male',
         returner_status: 'new',
         lastPhysical: '',
+        medicalConditions: '',
       },
     ],
   });
   // Refs for signature pads
   const parentSignaturePadRef = useRef<SignatureCanvas>(null);
-  const athleteSignaturePadRefs = useRef<Array<React.RefObject<SignatureCanvas>>>([]);
-
+  // const athleteSignaturePadRefs = useRef([React.createRef<SignatureCanvas>()]);
 
   const handleAthleteChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const updatedAthletes = parentFormData.athletes.map((athlete, i) =>
@@ -79,12 +80,13 @@ const SignupForm: React.FC = () => {
   };
 
   const handleAddAthlete = () => {
-    const newAthlete: AthleteSignupForm = {  // Explicit type assertion here
+    const newAthlete: AthleteSignupForm = {
       athleteFullName: '',
       dateOfBirth: '',
       gender: 'male',
       returner_status: 'new',
       lastPhysical: '',
+      medicalConditions: '',
     };
   
     setParentFormData((prevState) => ({
@@ -92,15 +94,18 @@ const SignupForm: React.FC = () => {
       athletes: [...prevState.athletes, newAthlete],
     }));
   
-    // Add a new ref for the newly added athlete
-    athleteSignaturePadRefs.current.push(React.createRef<SignatureCanvas>());
+    // Initialize a new ref for the new athlete and add it to the refs array
+   // athleteSignaturePadRefs.current = [...athleteSignaturePadRefs.current, React.createRef()];
   };
+  
+const handleRemoveAthlete = (index: number) => {
+  const updatedAthletes = parentFormData.athletes.filter((_, i) => i !== index);
+  // const updatedRefs = athleteSignaturePadRefs.current.filter((_, i) => i !== index);
+  
+  setParentFormData({ ...parentFormData, athletes: updatedAthletes });
+  // athleteSignaturePadRefs.current = updatedRefs;
+};
 
-    // Function to remove an athlete's input fields
-    const handleRemoveAthlete = (index: number) => {
-      const updatedAthletes = parentFormData.athletes.filter((_, i) => i !== index);
-      setParentFormData({ ...parentFormData, athletes: updatedAthletes });
-    };
     const [invalidFields, setInvalidFields] = useState({
       parentName: false,
       email: false,
@@ -112,20 +117,71 @@ const SignupForm: React.FC = () => {
       emergencyName: false,
       emergencyPhone: false,
     }); 
-    const { post, data, error, loading} = useApi<any>('/signup');
+    const { post, data, error } = useApi<any>('/signup');
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    // Effect for handling success
+    useEffect(() => {
+      if (data && !error) { // If there's data and no error, it's a success
+        toast.success('Sign up successful! Refreshing page...', {
+          position: "top-center",
+          autoClose: 5000,  // Toast will disappear after 5 seconds
+         /* onClose: () => {
+            // Refresh the page 1 second after the toast disappears
+            setTimeout(() => {
+              setIsSubmitting(false);
+              window.location.reload();
+            }, 5000);
+          },*/ 
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: blackGoldToastStyle,
+          });
+      // Perform any other actions on success, e.g., redirecting the user
+      setIsSubmitting(false);
+    
+      // window.location.reload(); or use your preferred way of navigating
+    }
+}, [data, error]);
+    useEffect(() => {
+      if (error) {
+        if (error.response && error.response.status === 409) {
+          toast.error('Sign up failed, parent with that email has already signed up. Try a different email.', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            style: blackGoldToastStyle,
+          });
+        } else {
+          // Handle other errors or general error message
+          toast.error('An unexpected error occurred. Please try again later.', {
+            // Toast configuration
+          });
+        }
+        setIsSubmitting(false);
+      }
+    }, [error]);
+    
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // console.log('Parent Form Data:', parentFormData);
+    //console.log('Parent Form Data:', parentFormData);
     e.preventDefault();
-    // setIsSubmitting(true); 
+    setIsSubmitting(true); 
+    // console.log('Athlete Signature Pad Refs:', athleteSignaturePadRefs.current);
 
     // Signature images
     const parentSignatureImage = parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
-    const athleteSignatureImages = parentFormData.athletes.map((athlete, index) => {
-      const athleteSignatureImage = athleteSignaturePadRefs.current[index]?.current?.getTrimmedCanvas().toDataURL('image/png');
-      return athleteSignatureImage;
-    });
+ /*   const athleteSignatureImages = parentFormData.athletes.map((_, index) => {
+      const ref = athleteSignaturePadRefs.current[index];
+      return ref && ref.current ? ref.current.getTrimmedCanvas().toDataURL('image/png') : null;
+    }); */
+    
+    
 
 
     // Prepare the data to be sent
@@ -133,7 +189,6 @@ const SignupForm: React.FC = () => {
       ...parentFormData,
       athletes: parentFormData.athletes.map((athlete, index) => ({
         ...athlete,
-        signature: athleteSignatureImages[index],
       })),
       signature: parentSignatureImage,
     };
@@ -151,7 +206,6 @@ const SignupForm: React.FC = () => {
         carrier: isEmpty(parentFormData.carrier),
         emergencyName: isEmpty(parentFormData.emergencyName),
         emergencyPhone: isEmpty(parentFormData.emergencyPhone),
-      
       // Set other fields accordingly
       });
           // Scroll to top of the page
@@ -173,36 +227,9 @@ const SignupForm: React.FC = () => {
 
       setIsSubmitting(false);
       return;
-    } else{
-      // Use the post method from useApi to send the data
-      try {
-        const response = await post(requestData);
-        // Handle the successful submission here
-        console.log(requestData);
-      
-      // Handle the successful submission here
-      toast.success('Sign up successful! Refreshing page...', {
-        position: "top-center",
-        autoClose: 5000,  // Toast will disappear after 5 seconds
-        /*onClose: () => {
-          // Refresh the page 1 second after the toast disappears
-          setTimeout(() => {
-            setIsSubmiting(false);
-            window.location.reload();
-          }, 5000);
-        }, */
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        style: blackGoldToastStyle,
-        });
-      }
-    catch (err) {
-      // Handle errors here
-      console.error('Error:', err);
-      }
+    } else {
+      await post(requestData);
+      setIsSubmitting(false);
     }
   };
 
@@ -216,10 +243,14 @@ const SignupForm: React.FC = () => {
     const contractPath = process.env.PUBLIC_URL + '/assets/PLAYER_CONTRACT.pdf';
     window.open(contractPath, 'Contract', 'height=600,width=800');
   };
+  
+  const handleConductClick = () => {
+    const conductPath = process.env.PUBLIC_URL + '/assets/conduct.pdf';
+    window.open(conductPath, 'Conduct', 'height=600,width=800');
+  };
 
   const handleSignatureClear = () => {
     console.log('Signature cleared!');
-    // Handle the clear signature logic here
   };
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -232,7 +263,7 @@ const SignupForm: React.FC = () => {
  const isEmergencyPhoneValid = phoneRegex.test(parentFormData.emergencyPhone);
 
   // Validation function
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     // Check other parent data
     const isParentDataValid = parentFormData.parentName && parentFormData.email && 
                               parentFormData.phoneNumber && parentFormData.streetAddress && 
@@ -246,15 +277,12 @@ const SignupForm: React.FC = () => {
     );
 
     setIsFormValid(!!( isEmergencyPhoneValid && isEmailValid && isPhoneValid && isParentDataValid && areAthletesValid && isAgreed));
-  };
+  }, [parentFormData, isAgreed, isEmailValid, isEmergencyPhoneValid, isPhoneValid]);
 
   useEffect(() => {
     validateForm();
-  }, [parentFormData, isAgreed]);
-  // Effect to re-validate form when data changes
-  useEffect(() => {
-    validateForm();
-  }, [parentFormData, isAgreed]);
+  }, [validateForm]);
+
 
 const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
 
@@ -424,6 +452,20 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
               />
             </label>
           </div>
+          {/* Any medical concernss */}
+          <div style={labelStyle}>
+            <label>
+              Medical or physical conditions (s) that are of concern to me:
+              <input
+                type="text"
+                name="medicalConditions"
+                placeholder='Medical'
+                value={athlete.medicalConditions}
+                onChange={(e) => handleAthleteChange(index, e)}
+                style={inputStyle}
+              />
+            </label>
+          </div>
           {/* Last Physical */}
           <div style={labelStyle}>
             <label>
@@ -475,8 +517,8 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           </div>
           <div style={labelStyle}>
             <label>
-              Athlete Signature *:
-              <SignaturePadComponent ref={athleteSignaturePadRefs.current[index]} onClear={handleSignatureClear}/>
+              {/* Athlete Signature *:
+              <SignaturePadComponent ref={athleteSignaturePadRefs.current[index]} onClear={handleSignatureClear} />*/}
             </label>
           </div>
         </div>
@@ -494,15 +536,24 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
             onChange={handleAgreementChange}
             style={{ marginRight: '10px' }}
           />
-          I agree to the <a href="#!" onClick={handleContractClick}>contract</a>
+          I agree to the <a href="#!" onClick={handleContractClick}>Contract</a> & <a href="#!" onClick={handleConductClick}>Code Of Conduct</a>
         </label>
       </div>
       <p>
         Parent Signature *:
       </p>
       <SignaturePadComponent ref={parentSignaturePadRef} onClear={handleSignatureClear} />
+      
+
       <button type="submit" style={currentButtonStyle} disabled={ !isAgreed || isSubmitting }>
-        {isAgreed ? 'Sign Up' : '⚠️ Agree to Contract'}
+      {isSubmitting ? (
+      <>
+        <FaSpinner className="spinner" /> {/* Replace with your spinner */}
+        Loading...
+      </>
+    ) : (
+      isAgreed ? 'Sign Up' : '⚠️ Agree to Contract'
+    )}
       </button>
 
       </Collapsible>

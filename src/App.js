@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from './assets/logo.jpg';
+import logo from './assets/logo.jpg'
 import './App.css';
 import SignupForm from './components/SignupForm';
 import { ToastContainer } from 'react-toastify';

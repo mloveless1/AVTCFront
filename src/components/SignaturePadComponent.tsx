@@ -26,7 +26,6 @@ const SignaturePadComponent = forwardRef<SignatureCanvas, SignaturePadComponentP
           penColor='gold'
           canvasProps={{ style: signatureCanvas }}
           ref={ref}
-          // ... other props
         />
       </div>
       <p>
