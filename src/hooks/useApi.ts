@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
+// TODO: CHANGE BASE_URL for API calls
+
 // This base URL will be prepended to all API requests.
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'https://avtc-back-9b28e9f9b3db.herokuapp.com';
 
 // Define a generic type for useApi, with a default of 'unknown'
 function useApi<T = unknown>(endpoint: string) {

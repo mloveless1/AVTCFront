@@ -124,14 +124,14 @@ const handleRemoveAthlete = (index: number) => {
       if (data && !error) { // If there's data and no error, it's a success
         toast.success('Sign up successful! Refreshing page...', {
           position: "top-center",
-          autoClose: 5000,  // Toast will disappear after 5 seconds
-         /* onClose: () => {
+          autoClose: 2000,  // Toast will disappear after 5 seconds
+          onClose: () => {
             // Refresh the page 1 second after the toast disappears
             setTimeout(() => {
               setIsSubmitting(false);
               window.location.reload();
             }, 5000);
-          },*/ 
+          }, 
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -289,7 +289,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
-      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 1: Parent Information <BsChevronDown /></div>}>
+      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 1: Parent Info <BsChevronDown /></div>}>
       <div style={labelStyle}>
         <label>
           Parent's Name *:
@@ -409,7 +409,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       </div>   
       <div style={labelStyle}>
         <label>
-          Emergency Contact Phone Number *:
+          Emergency Contact *:
           <input
             type="text"
             name="emergencyPhone"
@@ -422,7 +422,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       </div>  
       </Collapsible> 
       {/* Repeat similar divs for other parent fields like email and phone number */}
-      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 2: Athlete Information <BsChevronDown /></div>}>
+      <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 2: Athlete Info <BsChevronDown /></div>}>
       {parentFormData.athletes.map((athlete, index) => (
         <div key={index} style={athleteContainerStyle} className='athlete-container'>
           {/* Athlete's Full Name */}
@@ -455,7 +455,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           {/* Any medical concernss */}
           <div style={labelStyle}>
             <label>
-              Medical or physical conditions (s) that are of concern to me:
+              Medical conditions:
               <input
                 type="text"
                 name="medicalConditions"
@@ -536,7 +536,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
             onChange={handleAgreementChange}
             style={{ marginRight: '10px' }}
           />
-          I agree to the <a href="#!" onClick={handleContractClick}>Contract</a> & <a href="#!" onClick={handleConductClick}>Code Of Conduct</a>
+          I agree to: <a href="#!" style={{ color: 'gold' }} onClick={handleContractClick}>Contract</a> & <a href="#!" style={{ color: 'gold' }} onClick={handleConductClick}>Code of Conduct</a>
         </label>
       </div>
       <p>
