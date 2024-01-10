@@ -174,6 +174,25 @@ const handleRemoveAthlete = (index: number) => {
     setIsSubmitting(true); 
     // console.log('Athlete Signature Pad Refs:', athleteSignaturePadRefs.current);
 
+    // Check if the signature pad is empty
+    const isSignatureEmpty = parentSignaturePadRef.current?.isEmpty();
+
+    if (isSignatureEmpty) {
+        // Handle the empty signature case here
+        toast.error('Signature required', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: blackGoldToastStyle,
+        });
+        setIsSubmitting(false);
+        return;
+    }
+
     // Signature images
     const parentSignatureImage = parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL('image/png');
  /*   const athleteSignatureImages = parentFormData.athletes.map((_, index) => {

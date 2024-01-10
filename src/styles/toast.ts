@@ -7,4 +7,8 @@ export const blackGoldToastStyle = {
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
 };
 
-export default { blackGoldToastStyle };
+const toastStyles = {
+    blackGoldToastStyle,
+}
+
+export default toastStyles;
