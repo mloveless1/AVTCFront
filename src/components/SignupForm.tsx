@@ -124,13 +124,12 @@ const handleRemoveAthlete = (index: number) => {
       if (data && !error) { // If there's data and no error, it's a success
         toast.success('Sign up successful! Refreshing page...', {
           position: "top-center",
-          autoClose: 5000,  // Toast will disappear after 5 seconds
+          autoClose: 3000,  // Toast will disappear after 5 seconds
           onClose: () => {
-            // Refresh the page 1 second after the toast disappears
             setTimeout(() => {
               setIsSubmitting(false);
               window.location.reload();
-            }, 5000);
+            }, 500);
           }, 
           hideProgressBar: false,
           closeOnClick: true,
