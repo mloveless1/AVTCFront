@@ -71,6 +71,15 @@ const SignupForm: React.FC = () => {
     );
     setParentFormData({ ...parentFormData, athletes: updatedAthletes });
   };
+// Function to format phone number
+const formatPhoneNumber = (phoneNumber: String) => {
+  const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    return `${match[1]}-${match[2]}-${match[3]}`;
+  }
+  return phoneNumber; // Return original if format does not match
+};
 
   const handleParentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setParentFormData({
@@ -78,6 +87,17 @@ const SignupForm: React.FC = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  const handleParentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+  if (name === 'phoneNumber' || name === 'emergencyPhone') {
+    const formattedValue = formatPhoneNumber(value);
+    setParentFormData({
+      ...parentFormData,
+      [name]: formattedValue,
+    });
+  }
+};
 
   const handleAddAthlete = () => {
     const newAthlete: AthleteSignupForm = {
@@ -166,7 +186,7 @@ const handleRemoveAthlete = (index: number) => {
         setIsSubmitting(false);
       }
     }, [error]);
-    
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     //console.log('Parent Form Data:', parentFormData);
     e.preventDefault();
@@ -343,6 +363,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
             placeholder='Must be in the format: ###-###-####'
             value={parentFormData.phoneNumber}
             onChange={handleParentChange}
+            onBlur={handleParentBlur}
             style={ invalidFields.phoneNumber ? invalidInputStyle : inputStyle }
           />
         </label>
@@ -427,13 +448,14 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       </div>   
       <div style={labelStyle}>
         <label>
-          Emergency Contact *:
+          Emergency Contact #*:
           <input
             type="text"
             name="emergencyPhone"
             placeholder='Must be in the format: ###-###-####'
             value={parentFormData.emergencyPhone}
             onChange={handleParentChange}
+            onBlur={handleParentBlur}
             style={ invalidFields.emergencyPhone ? invalidInputStyle : inputStyle }
           />
         </label>
