@@ -65,6 +65,7 @@ export const signaturePadContainer: React.CSSProperties = {
 };
 
 export const signatureCanvas: React.CSSProperties = {
+  backgroundColor: 'white', 
   width: '100%',
   maxWidth: '400px', // Maximum width
   height: '100px',

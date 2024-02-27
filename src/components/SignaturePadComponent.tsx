@@ -23,7 +23,7 @@ const SignaturePadComponent = forwardRef<SignatureCanvas, SignaturePadComponentP
     <div>
       <div style={signaturePadContainer}>
         <SignatureCanvas
-          penColor='gold'
+          penColor='black'
           canvasProps={{ style: signatureCanvas }}
           ref={ref}
         />
