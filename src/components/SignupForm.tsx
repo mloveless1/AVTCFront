@@ -16,7 +16,9 @@ const isEmpty = (val: any) => val == null || !(Object.keys(val) || val).length;
 
 
 interface AthleteSignupForm {
-  athleteFullName: string;
+  athleteFirstName: string;
+  athleteLastName: string;
+  suffixName: string;
   dateOfBirth: string;
   gender: 'male' | 'female';
   returner_status: 'new' | 'returner';
@@ -25,7 +27,9 @@ interface AthleteSignupForm {
 }
 
 interface ParentForm {
-  parentName: string;
+  parentFirstName: string;
+  parentLastName: string;
+  suffixName: string;
   email: string;
   phoneNumber: string;
   streetAddress: string;
@@ -40,7 +44,9 @@ interface ParentForm {
 
 const SignupForm: React.FC = () => {
   const [parentFormData, setParentFormData] = useState<ParentForm>({
-    parentName: '',
+    parentFirstName: '',
+    parentLastName: '',
+    suffixName: '',
     email: '',
     phoneNumber: '',
     streetAddress: '',
@@ -52,7 +58,9 @@ const SignupForm: React.FC = () => {
     emergencyPhone: '',
     athletes: [
       {
-        athleteFullName: '',
+        athleteFirstName: '',
+        athleteLastName: '',
+        suffixName: '',
         dateOfBirth: '',
         gender: 'male',
         returner_status: 'new',
@@ -81,7 +89,7 @@ const formatPhoneNumber = (phoneNumber: String) => {
   return phoneNumber; // Return original if format does not match
 };
 
-  const handleParentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleParentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setParentFormData({
       ...parentFormData,
       [e.target.name]: e.target.value,
@@ -101,7 +109,9 @@ const formatPhoneNumber = (phoneNumber: String) => {
 
   const handleAddAthlete = () => {
     const newAthlete: AthleteSignupForm = {
-      athleteFullName: '',
+      athleteFirstName: '',
+      athleteLastName: '',
+      suffixName: '',
       dateOfBirth: '',
       gender: 'male',
       returner_status: 'new',
@@ -127,7 +137,8 @@ const handleRemoveAthlete = (index: number) => {
 };
 
     const [invalidFields, setInvalidFields] = useState({
-      parentName: false,
+      parentFirstName: false,
+      parentLastName: false,
       email: false,
       phoneNumber: false,
       streetAddress: false,
@@ -235,7 +246,8 @@ const handleRemoveAthlete = (index: number) => {
 
       // Update invalid fields state
       setInvalidFields({
-        parentName: isEmpty(parentFormData.parentName),
+        parentFirstName: isEmpty(parentFormData.parentFirstName),
+        parentLastName: isEmpty(parentFormData.parentLastName),
         email: !isEmailValid,
         phoneNumber: !isPhoneValid,
         streetAddress: isEmpty(parentFormData.streetAddress),
@@ -303,15 +315,17 @@ const handleRemoveAthlete = (index: number) => {
   // Validation function
   const validateForm = useCallback(() => {
     // Check other parent data
-    const isParentDataValid = parentFormData.parentName && parentFormData.email && 
-                              parentFormData.phoneNumber && parentFormData.streetAddress && 
+    const isParentDataValid = parentFormData.parentFirstName && parentFormData.parentLastName &&
+                              parentFormData.email && parentFormData.phoneNumber && 
+                              parentFormData.streetAddress && 
                               parentFormData.city && parentFormData.zipcode && 
                               parentFormData.carrier && 
                               parentFormData.emergencyName && parentFormData.emergencyPhone;
 
     // Check each athlete data
     const areAthletesValid = parentFormData.athletes.every(athlete => 
-      athlete.athleteFullName && athlete.dateOfBirth && athlete.gender && athlete.returner_status
+      athlete.athleteFirstName && athlete.athleteLastName && 
+      athlete.dateOfBirth && athlete.gender && athlete.returner_status
     );
 
     setIsFormValid(!!( isEmergencyPhoneValid && isEmailValid && isPhoneValid && isParentDataValid && areAthletesValid && isAgreed));
@@ -330,17 +344,49 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       <Collapsible trigger={<div style={adjustedCollapsibleStyle}>Section 1: Parent Info <BsChevronDown /></div>}>
       <div style={labelStyle}>
         <label>
-          Parent's Name *:
+          Parent's First Name *:
           <input
             type="text"
-            name="parentName"
-            placeholder='Enter your first and last name'
-            value={parentFormData.parentName}
+            name="parentFirstName"
+            placeholder='Enter your first name'
+            value={parentFormData.parentFirstName}
             onChange={handleParentChange}
-            style={ invalidFields.parentName ? invalidInputStyle : inputStyle }
+            style={ invalidFields.parentFirstName ? invalidInputStyle : inputStyle }
           />
         </label>
       </div>
+      <div style={labelStyle}>
+        <label>
+          Parent's Last Name *:
+          <input
+            type="text"
+            name="parentLastName"
+            placeholder='Enter your last name'
+            value={parentFormData.parentLastName}
+            onChange={handleParentChange}
+            style={ invalidFields.parentLastName ? invalidInputStyle : inputStyle }
+          />
+        </label>
+      </div>
+      <div style={labelStyle}>
+            <label>
+              Suffix [Optional]:
+              <select
+                name="suffixName"
+                value={parentFormData.suffixName}
+                onChange={handleParentChange}
+                style={inputStyle}
+              >
+                <option value=""> Select here </option>
+                <option value="Sr.">Sr.</option>
+                <option value="Jr.">Jr.</option>
+                <option value="I">I</option>
+                <option value="II">II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+              </select>
+            </label>
+            </div>            
       <div style={labelStyle}>
         <label>
           Parent's Email *:
@@ -448,7 +494,7 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
       </div>   
       <div style={labelStyle}>
         <label>
-          Emergency Contact #*:
+          Emergency Contact # *:
           <input
             type="text"
             name="emergencyPhone"
@@ -468,17 +514,48 @@ const currentButtonStyle = isAgreed ? buttonStyle : disabledButtonStyle;
           {/* Athlete's Full Name */}
           <div style={labelStyle}>
             <label>
-              Athlete's Full Name *:
+              Athlete's First Name *:
               <input
                 type="text"
-                name="athleteFullName"
-                placeholder='Enter your childs name'
-                value={athlete.athleteFullName}
+                name="athleteFirstName"
+                placeholder="Enter your athlete's first name"
+                value={athlete.athleteFirstName}
                 onChange={(e) => handleAthleteChange(index, e)}
                 style={inputStyle}
-              />
+              />              
             </label>
           </div>
+          <div style={labelStyle}>
+            <label>
+              Athlete's Last Name *:
+              <input
+                type="text"
+                name="athleteLastName"
+                placeholder="Enter your athlete's last name"
+                value={athlete.athleteLastName}
+                onChange={(e) => handleAthleteChange(index, e)}
+                style={inputStyle}
+              />              
+            </label>  
+          </div>
+          <div style={labelStyle}>
+            <label>
+              Suffix [Optional]:
+              <select
+                name="suffixName"
+                value={athlete.suffixName}
+                onChange={(e) => handleAthleteChange(index, e)}
+                style={inputStyle}
+              >
+                <option value=""> Select here </option>
+                <option value="Jr.">Jr.</option>
+                <option value="I">I</option>
+                <option value="II">II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+              </select>
+            </label>
+            </div>
           {/* Date of Birth */}
           <div style={labelStyle}>
             <label>
