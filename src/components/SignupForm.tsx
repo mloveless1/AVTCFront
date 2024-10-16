@@ -66,6 +66,7 @@ const SignupForm: React.FC = () => {
     ],
   });
 
+  const [isRemovable, setIsRemovable] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isAgreed } = useAgreementContext();
   const parentSignaturePadRef = useRef<SignatureCanvas>(null);
@@ -147,16 +148,20 @@ const SignupForm: React.FC = () => {
 
     const requestData = {
       ...parentFormData,
+      parent_signature: parentSignature,
       athletes: parentFormData.athletes.map((athlete, index) => ({
         ...athlete,
-        signature: athleteSignatures[index],
+        athlete_signature: athleteSignatures[index],
       })),
-      parentSignature,
     };
 
     await post(requestData);
     setIsSubmitting(false);
   };
+
+  useEffect(() => {
+    setIsRemovable(parentFormData.athletes.length > 1)
+  }, [parentFormData.athletes]);
 
   useEffect(() => {
     if (data && !error) {
@@ -191,7 +196,7 @@ const SignupForm: React.FC = () => {
             onAdd={handleAddAthlete}
             onRemove={handleRemoveAthlete}
             onChange={handleInputChange} 
-            isRemovable={false} 
+            isRemovable={isRemovable} 
             signaturePadRefs={athleteSignaturePadRefs}          />
         }
       />
