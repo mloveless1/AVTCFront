@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaSpinner } from 'react-icons/fa';
 import { buttonStyle, disabledButtonStyle } from '../styles/signup';
+import { useAgreementContext } from './context/AgreementContext';
 
 interface SubmitButtonProps {
   isSubmitting: boolean;
@@ -8,16 +9,24 @@ interface SubmitButtonProps {
 }
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({ isSubmitting, isFormValid }) => {
-  const currentButtonStyle = isFormValid ? buttonStyle : disabledButtonStyle;
+  const { isAgreed } = useAgreementContext();
+
+  const currentButtonStyle = isAgreed && !isSubmitting ? buttonStyle : disabledButtonStyle;
 
   return (
-    <button type="submit" style={currentButtonStyle} disabled={!isFormValid || isSubmitting}>
+    <button
+      type="submit"
+      style={currentButtonStyle}
+      disabled={!isAgreed || isSubmitting}
+    >
       {isSubmitting ? (
         <>
-          <FaSpinner className="spinner" /> Loading...
+          <FaSpinner className="spinner" /> Submitting...
         </>
+      ) : isAgreed ? (
+        'Submit'
       ) : (
-        isFormValid ? 'Sign Up' : '⚠️ Agree to Contract'
+        '⚠️ Agree to Contract'
       )}
     </button>
   );

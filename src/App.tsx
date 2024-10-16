@@ -1,12 +1,15 @@
 import { BrowserRouter } from "react-router-dom";
 import Router from "./router/router";
 import './App.css';
+import { AgreementProvider } from "./components/context/AgreementContext";
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Router />
-    </BrowserRouter>
+    <AgreementProvider>
+      <BrowserRouter>
+        <Router />
+      </BrowserRouter>
+    </AgreementProvider>
   );
 };
 

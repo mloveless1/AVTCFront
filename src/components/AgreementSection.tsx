@@ -1,23 +1,22 @@
-import React, { Ref } from 'react';
+import React from 'react';
 import SignaturePad from './SignaturePad';
-import { labelStyle, buttonStyle } from '../styles/signup';
+import { labelStyle } from '../styles/signup';
+import { useAgreementContext } from './context/AgreementContext';
 import ReactSignatureCanvas from 'react-signature-canvas';
 
 interface AgreementSectionProps {
-  isAgreed: boolean;
-  onAgreementChange: (isChecked: boolean) => void;
-  parentSignaturePadRef: Ref<ReactSignatureCanvas>;
+  parentSignaturePadRef: React.Ref<ReactSignatureCanvas>;
   handleContractClick: () => void;
   handleConductClick: () => void;
 }
 
 const AgreementSection: React.FC<AgreementSectionProps> = ({
-  isAgreed,
-  onAgreementChange,
   parentSignaturePadRef,
   handleContractClick,
   handleConductClick,
 }) => {
+  const { isAgreed, setIsAgreed } = useAgreementContext();
+
   return (
     <>
       <div style={labelStyle}>
@@ -25,14 +24,13 @@ const AgreementSection: React.FC<AgreementSectionProps> = ({
           <input
             type="checkbox"
             checked={isAgreed}
-            onChange={(e) => onAgreementChange(e.target.checked)}
+            onChange={(e) => setIsAgreed(e.target.checked)}
             style={{ marginRight: '10px' }}
           />
           I agree to: 
           <a href="#!" style={{ color: 'gold', marginLeft: '5px' }} onClick={handleContractClick}>
             Contract
-          </a> 
-          & 
+          </a> & 
           <a href="#!" style={{ color: 'gold', marginLeft: '5px' }} onClick={handleConductClick}>
             Code of Conduct
           </a>
