@@ -82,7 +82,7 @@ const SignupForm: React.FC = () => {
 
   const handleConductClick = () =>
     window.open(
-      `${process.env.PUBLIC_URL}/assets/CODE_OF_CONDUCT.pdf`,
+      `${process.env.PUBLIC_URL}/assets/conduct.pdf`,
       'Conduct',
       'height=600,width=800'
     );
@@ -137,10 +137,27 @@ const SignupForm: React.FC = () => {
     athleteSignaturePadRefs.current.splice(index, 1);
   };
 
+  const validateAthleteAges = (): boolean => {
+    const seasonYear = 2025;
+    const tooYoung = parentFormData.athletes.some((athlete) => {
+      const birthDate = new Date(athlete.dateOfBirth);
+      const ageInSeason = seasonYear - birthDate.getFullYear();
+      return ageInSeason < 5;
+    });
+
+    if (tooYoung) {
+      toast.error('One or more athletes are too young for signup.', { style: blackGoldToastStyle });
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
+    if (!validateAthleteAges()) return;
+
+    setIsSubmitting(true);
     const parentSignature = parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL();
     const athleteSignatures = athleteSignaturePadRefs.current.map(
       (ref) => ref?.getTrimmedCanvas().toDataURL()
