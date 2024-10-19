@@ -32,7 +32,7 @@ const AgreementSection: React.FC<AgreementSectionProps> = ({
             Contract
           </a> & 
           <a href="#!" style={{ color: 'gold', marginLeft: '5px' }} onClick={handleConductClick}>
-            Code of Conduct
+            Conduct
           </a>
         </label>
       </div>
