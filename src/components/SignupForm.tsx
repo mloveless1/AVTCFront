@@ -155,13 +155,34 @@ const SignupForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+      // Check if the parent signature is present
+    const parentSignature = parentSignaturePadRef.current?.isEmpty()
+    ? null
+    : parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL();
+
+  // Check if all athlete signatures are present
+  const athleteSignatures = athleteSignaturePadRefs.current.map((ref) =>
+    ref?.isEmpty() ? null : ref?.getTrimmedCanvas().toDataURL()
+  );
+
+// Check for any missing signatures
+  if (!parentSignature) {
+    toast.error('Parent signature is required.', { style: blackGoldToastStyle });
+    setIsSubmitting(false);
+    return;
+  }
+
+  const missingAthleteSignatures = athleteSignatures.some((signature) => signature === null);
+
+  if (missingAthleteSignatures) {
+    toast.error('All athletes must provide a signature.', { style: blackGoldToastStyle });
+    setIsSubmitting(false);
+    return;
+  }
+
     if (!validateAthleteAges()) return;
 
     setIsSubmitting(true);
-    const parentSignature = parentSignaturePadRef.current?.getTrimmedCanvas().toDataURL();
-    const athleteSignatures = athleteSignaturePadRefs.current.map(
-      (ref) => ref?.getTrimmedCanvas().toDataURL()
-    );
 
     const requestData = {
       ...parentFormData,
