@@ -138,7 +138,7 @@ const SignupForm: React.FC = () => {
   };
 
   const validateAthleteAges = (): boolean => {
-    const seasonYear = 2025;
+    const seasonYear = 2026;
     const tooYoung = parentFormData.athletes.some((athlete) => {
       const birthDate = new Date(athlete.dateOfBirth);
       const ageInSeason = seasonYear - birthDate.getFullYear();
