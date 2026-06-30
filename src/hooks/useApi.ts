@@ -4,7 +4,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 // TODO: CHANGE BASE_URL for API calls
 
 // This base URL will be prepended to all API requests.
-const BASE_URL = 'https://avtc-back-547f90ced4f8.herokuapp.com';
+const BASE_URL = 'https://avtc-back-2da4cd9ee488.herokuapp.com/';
 
 // Define a generic type for useApi, with a default of 'unknown'
 function useApi<T = unknown>(endpoint: string) {
